@@ -24,13 +24,13 @@ jobs:
       - name: Build macOS app bundle
         run: |
           set -euo pipefail
-          Scripts/build-app.sh
+          APP_DIR="$PWD/dist/Bilibili NEXT.app" Scripts/build-app.sh
           # build-app.sh signs ad-hoc on CI when no Apple Development identity exists.
 
       - name: Package release artifacts
         run: |
           set -euo pipefail
-          app_dir="Bilibili NEXT.app"
+          app_dir="dist/Bilibili NEXT.app"
           version="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app_dir/Contents/Info.plist")"
           stem="Bilibili-NEXT-$version-macOS-arm64"
           codesign --verify --deep --strict "$app_dir"

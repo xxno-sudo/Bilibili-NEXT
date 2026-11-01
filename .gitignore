@@ -8,6 +8,7 @@
 *.trace/
 local.BiliGlass.thumbnails/
 outputs/
+dist/
 DerivedData/
 xcuserdata/
 *.xcuserstate
