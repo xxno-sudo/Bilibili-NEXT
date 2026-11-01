@@ -41,7 +41,9 @@ struct BiliGlassContainer<Content: View>: View {
       RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.regularMaterial)
     }
     .overlay {
-      RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.06))
+      RoundedRectangle(cornerRadius: 12, style: .continuous)
+        .strokeBorder(.primary.opacity(0.06))
+        .allowsHitTesting(false)
     }
   }
 }
@@ -49,10 +51,10 @@ struct BiliGlassContainer<Content: View>: View {
 extension View {
   func biliGlassEffect(_ tint: Color, interactive: Bool = false, in shape: some InsettableShape) -> some View {
     background {
-      shape.fill(.regularMaterial)
+      shape.fill(.regularMaterial).allowsHitTesting(false)
     }
     .overlay {
-      shape.fill(tint)
+      shape.fill(tint).allowsHitTesting(false)
     }
     .clipShape(shape)
   }

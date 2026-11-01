@@ -1,0 +1,67 @@
+name: Build macOS app
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    # swift-tools-version 6.2 requires Xcode 26's Swift; the macOS 15 runner's
+    # Xcode is too old. Deployment target stays macOS 15 regardless.
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Swift dependencies
+        run: swift package resolve
+
+      - name: Build macOS app bundle
+        run: |
+          set -euo pipefail
+          Scripts/build-app.sh
+          # build-app.sh signs ad-hoc on CI when no Apple Development identity exists.
+
+      - name: Package release artifacts
+        run: |
+          set -euo pipefail
+          app_dir="Bilibili NEXT.app"
+          version="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app_dir/Contents/Info.plist")"
+          stem="Bilibili-NEXT-$version-macOS-arm64"
+          codesign --verify --deep --strict "$app_dir"
+          ditto -c -k --sequesterRsrc --keepParent "$app_dir" "$stem.zip"
+          stage_dir="$(mktemp -d)"
+          trap 'rm -rf "$stage_dir"' EXIT
+          mkdir -p "$stage_dir/dmg"
+          ditto "$app_dir" "$stage_dir/dmg/Bilibili NEXT.app"
+          ln -s /Applications "$stage_dir/dmg/Applications"
+          hdiutil create -volname 'Bilibili NEXT' -srcfolder "$stage_dir/dmg" -format UDZO -ov "$stem.dmg"
+          git archive --format=zip --prefix="Bilibili-NEXT-$version/" -o "Bilibili-NEXT-source-$version.zip" HEAD
+          shasum -a 256 "$stem.zip" "$stem.dmg" "Bilibili-NEXT-source-$version.zip" > "Bilibili-NEXT-$version-SHA256SUMS.txt"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bilibili-next-macos
+          path: |
+            Bilibili-NEXT-*-macOS-arm64.zip
+            Bilibili-NEXT-*-macOS-arm64.dmg
+            Bilibili-NEXT-source-*.zip
+            Bilibili-NEXT-*-SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Bilibili-NEXT-*-macOS-arm64.zip
+            Bilibili-NEXT-*-macOS-arm64.dmg
+            Bilibili-NEXT-source-*.zip
+            Bilibili-NEXT-*-SHA256SUMS.txt
+          generate_release_notes: true
