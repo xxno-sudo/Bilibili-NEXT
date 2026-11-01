@@ -3,6 +3,61 @@ import ImageIO
 import UniformTypeIdentifiers
 import CoreImage
 
+// MARK: - macOS 15 liquid-glass fallbacks
+// macOS 26 ships the .glass / .glassProminent button styles and the
+// .glassEffect(_:in:) modifier + BiliGlassContainer. None exist before macOS
+// 26. These approximations compile on any macOS 15+ SDK and render a similar
+// translucent, rounded look.
+
+struct BiliGlassButtonStyle: ButtonStyle {
+  let prominent: Bool
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .padding(.horizontal, 12)
+      .padding(.vertical, 5)
+      .background {
+        RoundedRectangle(cornerRadius: 8, style: .continuous)
+          .fill(prominent ? biliPink : (configuration.isPressed ? Color.primary.opacity(0.16) : Color.primary.opacity(0.06)))
+      }
+      .foregroundStyle(prominent ? .white : .primary)
+      .opacity(configuration.isPressed ? 0.85 : 1)
+  }
+}
+
+extension ButtonStyle where Self == BiliGlassButtonStyle {
+  static var biliGlass: BiliGlassButtonStyle { .init(prominent: false) }
+  static var biliGlassProminent: BiliGlassButtonStyle { .init(prominent: true) }
+}
+
+struct BiliGlassContainer<Content: View>: View {
+  var spacing: CGFloat = 0
+  @ViewBuilder var content: Content
+  var body: some View {
+    VStack(alignment: .leading, spacing: spacing) {
+      content
+    }
+    .padding(12)
+    .background {
+      RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.regularMaterial)
+    }
+    .overlay {
+      RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.06))
+    }
+  }
+}
+
+extension View {
+  func biliGlassEffect(_ tint: Color, interactive: Bool = false, in shape: some InsettableShape) -> some View {
+    background {
+      shape.fill(.regularMaterial)
+    }
+    .overlay {
+      shape.fill(tint)
+    }
+    .clipShape(shape)
+  }
+}
+
 enum AppLayout {
   static let sidebarWidth: CGFloat = 224
   static let toolbarHeight: CGFloat = 68
@@ -30,11 +85,8 @@ private struct GlassSurface: ViewModifier {
   let radius: CGFloat
   let tint: Color
   let interactive: Bool
-  @AppStorage("glassStyle") private var style = "clear"
-  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   func body(content: Content) -> some View {
-    content.glassEffect((style == "clear" && !reduceTransparency ? Glass.clear : Glass.regular)
-      .tint(tint).interactive(interactive), in: .rect(cornerRadius: radius))
+    content.biliGlassEffect(tint, interactive: interactive, in: .rect(cornerRadius: radius))
   }
 }
 private struct AppAppearance: ViewModifier {

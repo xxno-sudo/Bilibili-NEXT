@@ -812,7 +812,6 @@ struct NativePlayer: NSViewRepresentable {
     v.allowsPictureInPicturePlayback = true
     v.allowsVideoFrameAnalysis = false
     v.videoGravity = .resizeAspect
-    v.preferredDisplayDynamicRange = .high
     context.coordinator.observation = v.observe(\.isReadyForDisplay, options: [.initial, .new]) {
       view, _ in
       let ready = view.isReadyForDisplay

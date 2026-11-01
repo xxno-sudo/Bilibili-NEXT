@@ -84,8 +84,14 @@ struct BASScene: Sendable {
     let p = eased(c.duration > 0 ? (time-c.start)/c.duration : 1, c.easing)
     if key == "color" {
       let a = Int(c.from.scalar), b = Int(c.to.scalar)
+      let invP = 1 - p
       var color = 0
-      for shift in [0,8,16] { color |= Int((Double((a>>shift)&255) * (1-p) + Double((b>>shift)&255) * p).rounded()) << shift }
+      for shift in [0, 8, 16] {
+        let fromChannel = Double((a >> shift) & 255)
+        let toChannel = Double((b >> shift) & 255)
+        let blended = fromChannel * invP + toChannel * p
+        color |= Int(blended.rounded()) << shift
+      }
       return .number(Double(color))
     }
     // Preserve percent units when possible; mixed units use current viewport/parent dimensions.

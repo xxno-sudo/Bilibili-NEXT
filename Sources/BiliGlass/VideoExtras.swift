@@ -242,7 +242,7 @@ struct PlaybackFeatureControls: View {
       Button("弹幕列表") { danmakuManager = true }
       Spacer()
       if let error = store.extras.subtitleError { Text(error).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
-    }.buttonStyle(.glass).sheet(isPresented: $danmakuManager) { DanmakuManagement(store: store) }
+    }.buttonStyle(.biliGlass).sheet(isPresented: $danmakuManager) { DanmakuManagement(store: store) }
   }
 }
 struct VideoDiscovery: View {
@@ -250,7 +250,7 @@ struct VideoDiscovery: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
       if !store.extras.tags.isEmpty {
-        ScrollView(.horizontal) { HStack { ForEach(store.extras.tags) { tag in Button(tag.title) { store.query = tag.title; store.search() }.buttonStyle(.glass) } } }
+        ScrollView(.horizontal) { HStack { ForEach(store.extras.tags) { tag in Button(tag.title) { store.query = tag.title; store.search() }.buttonStyle(.biliGlass) } } }
       }
       let parts = PlaybackSequence.parts(store.playback.detail)
       if !parts.isEmpty { sequence("分 P · \(parts.count) P", items: parts, parts: true) }
@@ -274,7 +274,7 @@ struct VideoDiscovery: View {
   private func sequence(_ title: String, items: [PlaybackQueueItem], parts: Bool) -> some View {
     VStack(alignment: .leading, spacing: 10) {
       Label(title, systemImage: parts ? "rectangle.split.3x1" : "rectangle.stack").font(.headline)
-      GlassEffectContainer(spacing: 10) {
+      BiliGlassContainer(spacing: 10) {
         ScrollView(.horizontal) {
           LazyHStack(spacing: 10) {
             ForEach(items) { item in
@@ -289,7 +289,7 @@ struct VideoDiscovery: View {
                   .padding(.horizontal, 12).padding(.vertical, 8).foregroundStyle(.primary)
                   .contentShape(.rect(cornerRadius: 12))
               }.buttonStyle(InterfacePressStyle())
-                .glassEffect(.regular.tint(current ? biliPink.opacity(0.22) : .clear).interactive(),
+                .biliGlassEffect(current ? biliPink.opacity(0.22) : .clear, interactive: true,
                   in: .rect(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(current ? biliPink.opacity(0.7) : .clear, lineWidth: 1))
                 .accessibilityAddTraits(current ? .isSelected : [])

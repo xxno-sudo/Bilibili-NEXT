@@ -13,7 +13,13 @@
 - 为页面、导航按钮、视频卡片和小窗添加弹簧过渡，支持关闭界面动画及系统“减少动态效果”；Mac 小窗动画限定在小窗区域，移动端列表在固定区域交叠切换，设置分类在稳定容器中使用统一弹簧过渡。
 - 修复移动端补载弹幕后重新排轨道挤掉正在显示的弹幕；保留活动弹幕直到完整离屏，并按小视频实际可用高度分配轨道。
 
-macOS 1.1.3（build 14）与 iOS / iPadOS 0.1.3 开发预览（build 7）。Mac 支持 Apple silicon、macOS 26+；iPhone／iPad 支持系统 26+，IPA 仍需自行签名安装。
+macOS 1.1.3（build 14）与 iOS / iPadOS 0.1.3 开发预览（build 7）。Mac 支持 Apple silicon、macOS 15+；iPhone／iPad 支持系统 26+，IPA 仍需自行签名安装。
+
+## 1.1.3 · 适配 macOS 15（Sequoia）
+
+- 部署目标由 macOS 26 降至 macOS 15：`.glass`／`.glassProminent` 按钮样式与 `.glassEffect`／`GlassEffectContainer` 改用自定义的 `BiliGlassButtonStyle`／`biliGlassEffect`／`BiliGlassContainer` 实现，在任何 macOS 15+ SDK 下编译并呈现相近的半透明圆角外观。
+- 响度均一化依赖 macOS 27 SDK 的混音 tap 创建 API，macOS 15／16 构建下编译期关闭（`LoudnessProcessingTap` 走空实现，控制器不安装）；需要时可在 `Vendor/BiliKitCore/Package.swift` 打开 `enableMacOS27AudioTap`。
+- 移除仅 macOS 26+ 的 `AVPlayerView.preferredDisplayDynamicRange` 设置。
 
 ## 1.1.2 · 2026-10-25
 

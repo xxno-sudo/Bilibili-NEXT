@@ -28,6 +28,12 @@ final class LoudnessProcessingTap: @unchecked Sendable {
         self.tap = tap
     }
 
+    // The preferred-format creation API and the mix input track ID are only
+    // present in the macOS 27 SDK. Building against a macOS 15/26 SDK (or
+    // targeting macOS 15, where HLS mix taps are unsupported) must compile the
+    // feature out. Toggle `enableMacOS27AudioTap` in
+    // Vendor/BiliKitCore/Package.swift when building with a macOS 27+ SDK.
+#if ENABLE_MACOS_27_AUDIO_TAP
     @available(macOS 27.0, iOS 27.0, *)
     static func make(initialGain: Float) -> LoudnessProcessingTap? {
         guard initialGain.isFinite, initialGain > 0,
@@ -80,6 +86,12 @@ final class LoudnessProcessingTap: @unchecked Sendable {
         mix.inputParameters = [parameters]
         return mix
     }
+#else
+    // macOS 15/26 SDK or macOS 15 target: the tap cannot be created. The
+    // controller never installs it, so these stubs are unreachable.
+    static func make(initialGain: Float) -> LoudnessProcessingTap? { nil }
+    func makeAudioMix() -> AVAudioMix { AVMutableAudioMix() }
+#endif
 
     func setTargetGain(_ gain: Float) {
         state.setTargetGain(gain)

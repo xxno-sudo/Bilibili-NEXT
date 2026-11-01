@@ -596,7 +596,8 @@ import WebKit
             p.seek(to: p.durationSeconds * 0.55)
             try? await Task.sleep(for: .seconds(5))
           }
-          for (index, target) in (args.contains("--diagnostic-4k") ? [120, 80, 120] : [64, 80, 64]).enumerated() where streams.videos.contains(where: { $0.id == target }) {
+          let qualityTargets: [Int] = args.contains("--diagnostic-4k") ? [120, 80, 120] : [64, 80, 64]
+          for (index, target) in qualityTargets.enumerated() where streams.videos.contains(where: { $0.id == target }) {
             if index == 1 { p.player.pause() }
             if index == 2 { p.togglePlayback() }
             let before = p.player.currentTime().seconds
